@@ -1,0 +1,264 @@
+/* ===================================
+   Tool Page Specific Styles
+   =================================== */
+
+.tool-page {
+    padding: var(--spacing-xl) 0;
+    min-height: calc(100vh - 300px);
+}
+
+/* Tool Header */
+.tool-header {
+    margin-bottom: var(--spacing-xl);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: var(--spacing-md);
+    transition: color var(--transition-fast);
+}
+
+.back-link:hover {
+    color: var(--primary-dark);
+}
+
+.tool-header h1 {
+    font-size: 2.25rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.tool-description {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+}
+
+/* Tool Container */
+.tool-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.tool-input-section,
+.tool-output-section {
+    background: var(--white);
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.tool-input-section h2,
+.tool-output-section h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Form Styles */
+.tool-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.9375rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: var(--font-primary);
+    transition: border-color var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group small {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.btn-secondary {
+    background-color: var(--white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+    background-color: var(--background);
+    border-color: var(--text-secondary);
+}
+
+/* Results Section */
+.results-container {
+    min-height: 200px;
+}
+
+.placeholder-text {
+    color: var(--text-light);
+    text-align: center;
+    padding: var(--spacing-xl);
+    font-style: italic;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--background);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.result-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.result-value {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.result-highlight {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 8px;
+    text-align: center;
+    margin: var(--spacing-md) 0;
+}
+
+.result-highlight .result-value {
+    font-size: 2rem;
+    color: var(--white);
+    display: block;
+    margin-top: var(--spacing-xs);
+}
+
+/* Tool Info */
+.tool-info {
+    background: var(--white);
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.tool-info h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.tool-info ol,
+.tool-info ul {
+    padding-left: var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+.tool-info li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Alert/Notice Boxes */
+.alert {
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-md);
+    border-left: 4px solid;
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #0d47a1;
+}
+
+.alert-success {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #1b5e20;
+}
+
+.alert-warning {
+    background-color: #fff3e0;
+    border-color: #ff9800;
+    color: #e65100;
+}
+
+.alert-error {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #b71c1c;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .tool-container {
+        grid-template-columns: 1fr;
+    }
+
+    .tool-output-section {
+        order: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .tool-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+}

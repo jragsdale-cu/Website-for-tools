@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Name - ISCU Tools</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/tool-page.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1><a href="../index.html" style="text-decoration: none; color: inherit;">ISCU Tools</a></h1>
+                    <p class="subtitle">Illinois State Credit Union</p>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="../index.html#calculators">Calculators</a></li>
+                        <li><a href="../index.html#workflows">Workflows</a></li>
+                        <li><a href="../index.html#analysis">Analysis</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tool Content -->
+    <main class="tool-page">
+        <div class="container">
+
+            <!-- Tool Header -->
+            <div class="tool-header">
+                <a href="../index.html" class="back-link">&larr; Back to Home</a>
+                <h1>Tool Name</h1>
+                <p class="tool-description">Brief description of what this tool does</p>
+            </div>
+
+            <!-- Tool Interface -->
+            <div class="tool-container">
+                <div class="tool-input-section">
+                    <h2>Input</h2>
+
+                    <form id="toolForm" class="tool-form">
+                        <div class="form-group">
+                            <label for="input1">Input Field 1</label>
+                            <input type="text" id="input1" name="input1" placeholder="Enter value">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input2">Input Field 2</label>
+                            <input type="number" id="input2" name="input2" placeholder="0.00">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Calculate</button>
+                            <button type="reset" class="btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tool-output-section">
+                    <h2>Results</h2>
+                    <div id="results" class="results-container">
+                        <p class="placeholder-text">Results will appear here after calculation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool Info/Help -->
+            <div class="tool-info">
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Enter your values in the input fields</li>
+                    <li>Click "Calculate" to see results</li>
+                    <li>Use "Clear" to reset the form</li>
+                </ol>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Illinois State Credit Union. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // Tool-specific JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('toolForm');
+            const resultsDiv = document.getElementById('results');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Get input values
+                const input1 = document.getElementById('input1').value;
+                const input2 = document.getElementById('input2').value;
+
+                // Perform calculations here
+                // Example:
+                // const result = calculateSomething(input1, input2);
+
+                // Display results
+                resultsDiv.innerHTML = `
+                    <div class="result-item">
+                        <span class="result-label">Result 1:</span>
+                        <span class="result-value">Value here</span>
+                    </div>
+                `;
+            });
+
+            form.addEventListener('reset', function() {
+                resultsDiv.innerHTML = '<p class="placeholder-text">Results will appear here after calculation</p>';
+            });
+        });
+    </script>
+</body>
+</html>
