@@ -103,6 +103,21 @@ button { cursor: pointer; }
 .title-in::placeholder { color: var(--faint); font-weight: 500; }
 .title-in:hover { border-color: var(--line); }
 .title-in:focus { border-color: var(--accent); outline: none; }
+.titles { display: flex; flex-direction: column; gap: 4px; }
+.titles .trow { display: flex; gap: 4px; align-items: center; }
+.titles .trow .title-in { flex: 1; min-width: 0; }
+.titles .trow .rm { border: 0; background: transparent; color: var(--faint); font-size: 14px; line-height: 1; padding: 2px 5px; border-radius: 5px; }
+.titles .trow .rm:hover { color: var(--warn); background: var(--surface); }
+.addt { border: 0; background: transparent; color: var(--accent); font-size: 11px; font-weight: 600; padding: 0; text-align: left; }
+.addt:hover { text-decoration: underline; }
+.loc { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.loc .lbl { font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: 10px; }
+.loc select { flex: 1; min-width: 0; border: 1px solid transparent; background: var(--surface); border-radius: 6px; padding: 3px 5px; font-size: 12px; font-weight: 600; color: var(--fg); }
+.loc select:hover { border-color: var(--line); }
+.loc select.unset { color: var(--faint); font-weight: 500; }
+.loc .ro { font-weight: 600; color: var(--fg); font-size: 12px; }
+.loc .ro.unset { color: var(--faint); font-weight: 500; }
+.card .moved { grid-column: 1; font-size: 10.5px; color: var(--warn); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cover { display: flex; flex-wrap: wrap; gap: 3px 8px; font-size: 11px; color: var(--muted); min-height: 14px; }
 .cover span { white-space: nowrap; }
 .cover b { font-weight: 600; color: var(--fg); }
@@ -113,9 +128,9 @@ button { cursor: pointer; }
 .card .name { font-weight: 600; font-size: 13px; line-height: 1.25; }
 .card .meta { grid-column: 1; font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card .meta .br { color: var(--bc, var(--muted)); font-weight: 600; }
-.card .done-mark { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: var(--ok); font-size: 14px; font-weight: 700; display: none; }
+.card .done-mark { grid-column: 2; grid-row: 1 / span 3; align-self: center; color: var(--ok); font-size: 14px; font-weight: 700; display: none; }
 .card.done .done-mark { display: block; }
-.card .mv { grid-column: 2; grid-row: 1 / span 2; align-self: center; border: 0; background: transparent; color: var(--faint); border-radius: 5px; padding: 2px 4px; font-size: 14px; line-height: 1; opacity: 0; }
+.card .mv { grid-column: 2; grid-row: 1 / span 3; align-self: center; border: 0; background: transparent; color: var(--faint); border-radius: 5px; padding: 2px 4px; font-size: 14px; line-height: 1; opacity: 0; }
 .card:hover .mv, .card:focus-within .mv { opacity: 1; }
 .card.done .mv { display: none; }
 .card.done:hover .mv { display: block; } .card.done:hover .done-mark { display: none; }
@@ -154,6 +169,24 @@ button { cursor: pointer; }
 .row-p.checked .nm { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
 .row-p .sub { font-size: 11px; color: var(--muted); }
 .row-p[aria-disabled="true"] { cursor: default; }
+.sechead .loc-tag { font-size: 11px; color: var(--muted); }
+.sechead .loc-tag b { color: var(--fg); font-weight: 600; }
+
+/* ---------- Changes ---------- */
+.ctl .ctl-title { font-weight: 600; color: var(--muted); font-size: 13px; }
+.logrow { display: grid; grid-template-columns: 120px 1fr; gap: 4px 14px; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface); font-size: 13px; }
+.logrow:first-child { border-radius: 10px 10px 0 0; }
+.logrow:last-child { border-radius: 0 0 10px 10px; }
+.logwrap { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.logrow .when { font-family: var(--mono); font-size: 11px; color: var(--muted); padding-top: 2px; }
+.logrow .who { font-weight: 600; }
+.logrow .what { color: var(--muted); }
+.logrow .what b { color: var(--fg); font-weight: 600; }
+.logrow.del .who { color: var(--warn); }
+@media (max-width: 600px) { .logrow { grid-template-columns: 1fr; } }
+.pop .danger { border: 0; background: transparent; color: var(--warn); font-size: 12px; font-weight: 600; padding: 0; text-align: left; }
+.pop .danger:hover { text-decoration: underline; }
+.btn.warn { background: var(--warn); border-color: var(--warn); color: #fff; }
 
 /* ---------- Popover / dialog ---------- */
 .pop { position: fixed; z-index: 50; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 12px; min-width: 240px; max-width: calc(100vw - 32px); display: flex; flex-direction: column; gap: 8px; }
@@ -180,6 +213,7 @@ button { cursor: pointer; }
   <div class="tabs" role="tablist">
     <button class="tab" id="tab-board" role="tab" aria-selected="true" data-view="board">Schedule</button>
     <button class="tab" id="tab-check" role="tab" aria-selected="false" data-view="check">Checklist</button>
+    <button class="tab" id="tab-log" role="tab" aria-selected="false" data-view="log">Changes</button>
   </div>
   <div class="spacer"></div>
   <span class="stat" id="stat"></span>
@@ -201,6 +235,17 @@ button { cursor: pointer; }
       <span class="overall" id="overall"></span>
     </div>
     <div id="checklist"></div>
+  </div>
+</section>
+
+<section class="view" id="view-log" hidden>
+  <div class="wrap">
+    <div class="ctl">
+      <span class="ctl-title">Who was moved, from where, and when</span>
+      <span class="overall" id="log-count"></span>
+      <button class="btn small" id="log-clear" hidden>Clear history</button>
+    </div>
+    <div id="log"></div>
   </div>
 </section>
 
@@ -233,21 +278,39 @@ button { cursor: pointer; }
   S.version = 0; S.token = ''; S.dirty = false; S.saving = false;
   let saveTimer = null;
   function setStatus(cls, text) { const st = $('status'); st.classList.remove('live', 'ro', 'err'); if (cls) st.classList.add(cls); $('status-text').textContent = text; }
+  const LOCATIONS = ['Center St', 'Ottawa', 'Loves Park', 'Virtual (any location)'];
+  const LOG_MAX = 400;
+  S.log = [];
   function serialize() {
     const sessions = {};
-    Object.values(S.sessions).forEach(s => { if (s.virtual && !s.people.length) return; const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', title: s.title || '', people: s.people.slice(), done: Object.assign({}, s.done) }; if (s.kind) b.kind = s.kind; sessions[s.id] = b; });
+    Object.values(S.sessions).forEach(s => {
+      if (s.virtual && !s.people.length) return;
+      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), location: s.location || '', people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved) };
+      if (s.kind) b.kind = s.kind; sessions[s.id] = b;
+    });
     const people = {};
     Object.values(S.people).forEach(p => { people[p.id] = { first: p.first, last: p.last, branch: p.branch, role: p.role || '', dept: p.dept || '' }; });
-    return { people, sessions };
+    return { people, sessions, log: S.log.slice(-LOG_MAX) };
   }
   function applyState(data, version) {
     const next = {};
-    Object.entries(data.sessions || {}).forEach(([id, b]) => { next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', title: b.title || '', people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), kind: b.kind || '' }; });
-    if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', title: '', people: [], done: {}, kind: 'bench', virtual: true };
+    Object.entries(data.sessions || {}).forEach(([id, b]) => {
+      let titles = Array.isArray(b.titles) ? b.titles.filter(t => typeof t === 'string') : [];
+      if (!titles.length && b.title) titles = [b.title];
+      if (!titles.length) titles = [''];
+      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, location: b.location || '', people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), kind: b.kind || '' };
+    });
+    if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', titles: [''], location: '', people: [], done: {}, moved: {}, kind: 'bench', virtual: true };
     S.sessions = next;
     const ppl = {};
     Object.entries(data.people || {}).forEach(([id, b]) => { ppl[id] = { id, first: b.first || '', last: b.last || '', branch: b.branch || '', role: b.role || '', dept: b.dept || '' }; });
-    S.people = ppl; S.version = version; S.ready = true; render();
+    S.people = ppl; S.log = Array.isArray(data.log) ? data.log.slice(-LOG_MAX) : []; S.version = version; S.ready = true; render();
+  }
+  function shortLabel(s) { if (!s) return '?'; if (s.id === BENCH) return 'Unassigned'; const f = fmtDate(s.date); return f.wd + ' ' + f.date + (s.part ? ' ' + s.part : ''); }
+  function logEvent(type, pid, from, to) {
+    const p = S.people[pid];
+    S.log.push({ at: Date.now(), type, pid, name: p ? fullName(p) : pid, from: from ? from.id : '', fromLabel: from ? shortLabel(from) : '', to: to ? to.id : '', toLabel: to ? shortLabel(to) : '' });
+    if (S.log.length > LOG_MAX) S.log = S.log.slice(-LOG_MAX);
   }
   function scheduleSave() {
     if (!S.canWrite) return;
@@ -313,7 +376,14 @@ button { cursor: pointer; }
     }
     if (to.people.includes(pid)) { toast(fullName(S.people[pid] || { first: 'That person', last: '' }) + ' is already on that day.'); return; }
     from.people = from.people.filter(x => x !== pid); delete from.done[pid];
+    // Remember the original day: if the person was already moved once, keep the first origin; moving back home clears it.
+    const prev = from.moved[pid];
+    const origin = (prev && prev.from) || fromId;
+    const originLabel = S.sessions[origin] ? shortLabel(S.sessions[origin]) : ((prev && prev.fromLabel) || shortLabel(from));
+    delete from.moved[pid];
+    if (origin === toId) delete to.moved[pid]; else to.moved[pid] = { from: origin, fromLabel: originLabel, at: Date.now() };
     const arr = to.people.slice(); arr.splice(Math.max(0, Math.min(index == null ? arr.length : index, arr.length)), 0, pid); to.people = arr;
+    logEvent('move', pid, from, to);
     render();
     writeSession(toId);
     if (from.virtual && from.people.length === 0) return;
@@ -322,17 +392,29 @@ button { cursor: pointer; }
   function addToSession(sid, pid) {
     const s = S.sessions[sid]; if (!s) return;
     if (s.people.includes(pid)) { toast('Already on this day.'); return; }
-    s.people = s.people.concat([pid]); render(); writeSession(sid);
+    s.people = s.people.concat([pid]); logEvent('add', pid, null, s); render(); writeSession(sid);
   }
+  function deletePerson(pid) {
+    const p = S.people[pid]; if (!p) return;
+    const days = Object.values(S.sessions).filter(s => s.people.includes(pid));
+    days.forEach(s => { s.people = s.people.filter(x => x !== pid); delete s.done[pid]; delete s.moved[pid]; });
+    logEvent('delete', pid, null, null);
+    delete S.people[pid];
+    render(); scheduleSave();
+    toast(fullName(p) + ' removed from the board.');
+  }
+  function setLocation(sid, loc) { const s = S.sessions[sid]; if (!s) return; s.location = loc; render(); writeSession(sid); }
+  function addTitle(sid) { const s = S.sessions[sid]; if (!s) return; s.titles = s.titles.concat(['']); render(); const inp = $('title-' + sid + '-' + (s.titles.length - 1)); if (inp) inp.focus(); }
+  function removeTitle(sid, i) { const s = S.sessions[sid]; if (!s || s.titles.length <= 1) return; s.titles = s.titles.filter((_, k) => k !== i); render(); writeSession(sid); }
   function toggleDone(sid, pid) {
     const s = S.sessions[sid]; if (!s) return;
     if (s.done[pid]) delete s.done[pid]; else s.done[pid] = true;
     render(); writeSession(sid);
   }
   const titleTimers = {};
-  function setTitle(sid, title) {
+  function setTitle(sid, i, title) {
     const s = S.sessions[sid]; if (!s) return;
-    s.title = title;
+    s.titles[i] = title;
     clearTimeout(titleTimers[sid]);
     titleTimers[sid] = setTimeout(() => writeSession(sid), 600);
   }
@@ -340,7 +422,7 @@ button { cursor: pointer; }
     const key = part === 'Morning' ? 'am' : part === 'Afternoon' ? 'pm' : '';
     const id = 's-' + date + (key ? '-' + key : '');
     if (S.sessions[id]) { toast('That day already exists.'); return false; }
-    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), title: '', people: [], done: {} };
+    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], location: '', people: [], done: {}, moved: {} };
     render(); writeSession(id); return true;
   }
   function removeSession(sid) {
@@ -362,7 +444,7 @@ button { cursor: pointer; }
   function render() {
     if (!S.ready) return;
     renderStat();
-    if (S.view === 'board') renderBoard(); else renderChecklist();
+    if (S.view === 'board') renderBoard(); else if (S.view === 'log') renderLog(); else renderChecklist();
   }
   function renderStat() {
     const sess = orderedSessions();
@@ -403,9 +485,29 @@ button { cursor: pointer; }
     r1.appendChild(el('span', 'count', String(s.people.length)));
     head.appendChild(r1);
     if (!isBench) {
-      const t = el('input', 'title-in'); t.type = 'text'; t.id = 'title-' + s.id; t.placeholder = 'Training title…'; t.value = s.title || ''; t.setAttribute('aria-label', 'Training title'); t.maxLength = 120;
-      if (S.canWrite === false) t.readOnly = true; else t.addEventListener('input', () => setTitle(s.id, t.value));
-      head.appendChild(t);
+      const ro = S.canWrite === false;
+      const tl = el('div', 'titles');
+      s.titles.forEach((title, i) => {
+        const row = el('div', 'trow');
+        const t = el('input', 'title-in'); t.type = 'text'; t.id = 'title-' + s.id + '-' + i; t.placeholder = s.titles.length > 1 ? 'Training ' + (i + 1) + '…' : 'Training title…'; t.value = title || ''; t.setAttribute('aria-label', 'Training title ' + (i + 1)); t.maxLength = 120;
+        if (ro) t.readOnly = true; else t.addEventListener('input', () => setTitle(s.id, i, t.value));
+        row.appendChild(t);
+        if (!ro && s.titles.length > 1) { const rm = el('button', 'rm', '×'); rm.title = 'Remove this training'; rm.setAttribute('aria-label', 'Remove training ' + (i + 1)); rm.addEventListener('click', () => removeTitle(s.id, i)); row.appendChild(rm); }
+        tl.appendChild(row);
+      });
+      if (!ro) { const add = el('button', 'addt', '+ Add training'); add.addEventListener('click', () => addTitle(s.id)); tl.appendChild(add); }
+      head.appendChild(tl);
+      const loc = el('div', 'loc'); loc.appendChild(el('span', 'lbl', 'Report to'));
+      if (ro) { loc.appendChild(el('span', 'ro' + (s.location ? '' : ' unset'), s.location || 'Not set')); }
+      else {
+        const sel = el('select'); sel.id = 'loc-' + s.id; sel.setAttribute('aria-label', 'Report-to location');
+        const o0 = el('option', null, 'Not set'); o0.value = ''; sel.appendChild(o0);
+        LOCATIONS.concat(s.location && !LOCATIONS.includes(s.location) ? [s.location] : []).forEach(l => { const o = el('option', null, l); o.value = l; sel.appendChild(o); });
+        sel.value = s.location || ''; if (!s.location) sel.classList.add('unset');
+        sel.addEventListener('change', () => setLocation(s.id, sel.value));
+        loc.appendChild(sel);
+      }
+      head.appendChild(loc);
       head.appendChild(renderCoverage(s));
     } else {
       head.appendChild(el('div', 'cover', 'People pulled off a day land here until they are rescheduled.'));
@@ -437,6 +539,8 @@ button { cursor: pointer; }
     card.style.setProperty('--bc', bcolor(p.branch));
     card.appendChild(el('div', 'name', fullName(p)));
     const meta = el('div', 'meta'); const br = el('span', 'br', p.branch || '—'); meta.appendChild(br); if (p.role) meta.appendChild(document.createTextNode(' · ' + p.role)); card.appendChild(meta);
+    const mv0 = s.moved[p.id];
+    if (mv0) { const m = el('div', 'moved', '↳ moved from ' + (mv0.fromLabel || shortLabel(S.sessions[mv0.from]) || 'another day')); m.title = 'Moved ' + fmtWhen(mv0.at); card.appendChild(m); }
     card.appendChild(el('span', 'done-mark', '✓'));
     if (S.canWrite !== false) {
       card.draggable = true; card.tabIndex = 0;
@@ -451,6 +555,49 @@ button { cursor: pointer; }
   }
   let placeholder = null;
   function clearPlaceholders() { if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder); placeholder = null; }
+  // Auto-scroll the board sideways while a card is dragged near either edge.
+  let edgeDir = 0, edgeRaf = 0;
+  function edgeStep() { if (!S.dragging || !edgeDir) { edgeRaf = 0; return; } $('board').scrollLeft += edgeDir; edgeRaf = requestAnimationFrame(edgeStep); }
+  document.addEventListener('dragover', (ev) => {
+    if (!S.dragging) return;
+    const b = $('board'); const r = b.getBoundingClientRect(); const zone = 70;
+    let dir = 0;
+    if (ev.clientX < r.left + zone) dir = -Math.ceil((r.left + zone - ev.clientX) / 5);
+    else if (ev.clientX > r.right - zone) dir = Math.ceil((ev.clientX - (r.right - zone)) / 5);
+    edgeDir = dir;
+    if (dir && !edgeRaf) edgeRaf = requestAnimationFrame(edgeStep);
+  });
+  document.addEventListener('dragend', () => { edgeDir = 0; });
+  document.addEventListener('drop', () => { edgeDir = 0; });
+  function fmtWhen(ts) { if (!ts) return ''; const d = new Date(ts); let h = d.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; const mi = String(d.getMinutes()).padStart(2, '0'); return MO[d.getMonth()] + ' ' + d.getDate() + ', ' + h + ':' + mi + ' ' + ap; }
+
+  // ---------- changes ----------
+  function renderLog() {
+    const root = $('log'); root.innerHTML = '';
+    const items = S.log.slice().reverse();
+    $('log-count').textContent = items.length ? items.length + ' change' + (items.length === 1 ? '' : 's') : '';
+    const clr = $('log-clear'); clr.hidden = !(S.canWrite && items.length);
+    if (!items.length) { root.appendChild(el('div', 'empty', 'No moves yet. When someone is moved, added, or removed, it shows up here.')); return; }
+    const wrap = el('div', 'logwrap');
+    items.forEach(e => {
+      const row = el('div', 'logrow' + (e.type === 'delete' ? ' del' : ''));
+      row.appendChild(el('span', 'when', fmtWhen(e.at)));
+      const body = el('span'); body.appendChild(el('span', 'who', e.name + ' '));
+      const what = el('span', 'what');
+      if (e.type === 'move') { what.appendChild(document.createTextNode('moved from ')); what.appendChild(el('b', null, e.fromLabel || '?')); what.appendChild(document.createTextNode(' to ')); what.appendChild(el('b', null, e.toLabel || '?')); }
+      else if (e.type === 'add') { what.appendChild(document.createTextNode('added to ')); what.appendChild(el('b', null, e.toLabel || '?')); }
+      else if (e.type === 'delete') { what.appendChild(document.createTextNode('removed from the board')); }
+      else what.appendChild(document.createTextNode(e.type));
+      body.appendChild(what); row.appendChild(body); wrap.appendChild(row);
+    });
+    root.appendChild(wrap);
+  }
+  $('log-clear').addEventListener('click', () => {
+    if (!S.canWrite) return;
+    const b = $('log-clear');
+    if (b.dataset.arm !== '1') { b.dataset.arm = '1'; b.textContent = 'Click again to clear'; b.classList.add('warn'); setTimeout(() => { b.dataset.arm = ''; b.textContent = 'Clear history'; b.classList.remove('warn'); }, 4000); return; }
+    S.log = []; b.dataset.arm = ''; b.textContent = 'Clear history'; b.classList.remove('warn'); render(); scheduleSave();
+  });
   function wireDrop(col, cards, sid) {
     col.addEventListener('dragover', (ev) => {
       if (!S.dragging) return; ev.preventDefault(); ev.dataTransfer.dropEffect = 'move';
@@ -482,9 +629,12 @@ button { cursor: pointer; }
         const n = s.people.length, k = s.people.filter(p => s.done[p]).length;
         const sec = el('section', 'sec' + (n && k === n ? ' complete' : ''));
         const head = el('div', 'sechead');
-        const t = el('div', 't'); if (s.title) t.textContent = s.title; else { const u = el('span', 'untitled', 'Untitled training'); t.appendChild(u); }
+        const t = el('div', 't'); const tt = titlesText(s); if (tt) t.textContent = tt; else { const u = el('span', 'untitled', 'Untitled training'); t.appendChild(u); }
         const f = fmtDate(s.date);
-        head.appendChild(t); head.appendChild(el('div', 'd', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '')));
+        head.appendChild(t);
+        const d = el('div', 'd', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : ''));
+        if (s.location) { const lt = el('span', 'loc-tag', ' · report to '); lt.appendChild(el('b', null, s.location)); d.appendChild(lt); }
+        head.appendChild(d);
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = (n ? Math.round(k / n * 100) : 0) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
         const rows = el('div', 'rows');
@@ -506,7 +656,7 @@ button { cursor: pointer; }
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = Math.round(k / n * 100) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
         const rows = el('div', 'rows');
-        mine.forEach(s => { const f = fmtDate(s.date); rows.appendChild(renderCheckRow(s, p, s.title || 'Untitled training', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : ''), true)); });
+        mine.forEach(s => { const f = fmtDate(s.date); rows.appendChild(renderCheckRow(s, p, titlesText(s) || 'Untitled training', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (s.location ? ' · ' + s.location : ''), true)); });
         sec.appendChild(rows); root.appendChild(sec);
       });
     }
@@ -539,7 +689,8 @@ button { cursor: pointer; }
     const first = pop.querySelector('select, input'); if (first) first.focus();
     pop.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closePop(); });
   }
-  function sessionLabel(s) { if (s.id === BENCH) return 'Unassigned'; const f = fmtDate(s.date); return f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (s.title ? ' — ' + s.title : ''); }
+  function titlesText(s) { return (s.titles || []).map(t => t.trim()).filter(Boolean).join(' + '); }
+  function sessionLabel(s) { if (s.id === BENCH) return 'Unassigned'; const f = fmtDate(s.date); const t = titlesText(s); return f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (t ? ' — ' + t : ''); }
   function openMove(anchor, pid, fromId) {
     showPop(anchor, (pop) => {
       const p = S.people[pid];
@@ -548,6 +699,17 @@ button { cursor: pointer; }
       orderedSessions().concat([S.sessions[BENCH]]).filter(s => s && s.id !== fromId).forEach(s => { const o = el('option', null, sessionLabel(s)); o.value = s.id; if (s.people.includes(pid)) { o.disabled = true; o.textContent += ' (already on)'; } sel.appendChild(o); });
       pop.appendChild(sel);
       const act = el('div', 'actions'); const c = el('button', 'btn', 'Cancel'); c.addEventListener('click', closePop); const ok = el('button', 'btn primary', 'Move'); ok.addEventListener('click', () => { movePerson(pid, fromId, sel.value, null); closePop(); }); act.appendChild(c); act.appendChild(ok); pop.appendChild(act);
+      const days = Object.values(S.sessions).filter(s => s.people.includes(pid) && s.id !== BENCH).length;
+      const del = el('button', 'danger', 'Remove ' + p.first + ' from the board…');
+      del.addEventListener('click', () => {
+        pop.innerHTML = '';
+        pop.appendChild(el('label', null, 'Remove person'));
+        pop.appendChild(el('div', null, 'This takes ' + fullName(p) + ' off ' + (days === 1 ? 'the 1 day' : 'all ' + days + ' days') + ' and out of the roster. You can add them back later from "+ Add person".'));
+        const a2 = el('div', 'actions'); const c2 = el('button', 'btn', 'Cancel'); c2.addEventListener('click', closePop);
+        const ok2 = el('button', 'btn warn', 'Remove'); ok2.addEventListener('click', () => { deletePerson(pid); closePop(); });
+        a2.appendChild(c2); a2.appendChild(ok2); pop.appendChild(a2);
+      });
+      pop.appendChild(del);
     });
   }
   function openAddPerson(anchor, sid) {
@@ -596,13 +758,13 @@ button { cursor: pointer; }
   function setView(v) {
     S.view = v;
     document.querySelectorAll('.topbar .tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === v)));
-    $('view-board').hidden = v !== 'board'; $('view-check').hidden = v !== 'check';
+    $('view-board').hidden = v !== 'board'; $('view-check').hidden = v !== 'check'; $('view-log').hidden = v !== 'log';
     try { localStorage.setItem('ktb-view', v); } catch (e) {}
     render();
   }
   document.querySelectorAll('.topbar .tab').forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
   document.querySelectorAll('#view-check .tab').forEach(t => t.addEventListener('click', () => { S.group = t.dataset.group; document.querySelectorAll('#view-check .tab').forEach(x => x.setAttribute('aria-selected', String(x === t))); try { localStorage.setItem('ktb-group', S.group); } catch (e) {} render(); }));
-  try { const v = localStorage.getItem('ktb-view'); if (v === 'check' || location.hash === '#checklist') setView('check'); const g = localStorage.getItem('ktb-group'); if (g === 'person') { S.group = 'person'; document.querySelectorAll('#view-check .tab').forEach(x => x.setAttribute('aria-selected', String(x.dataset.group === 'person'))); } } catch (e) {}
+  try { const v = localStorage.getItem('ktb-view'); if (v === 'check' || location.hash === '#checklist') setView('check'); else if (v === 'log' || location.hash === '#changes') setView('log'); const g = localStorage.getItem('ktb-group'); if (g === 'person') { S.group = 'person'; document.querySelectorAll('#view-check .tab').forEach(x => x.setAttribute('aria-selected', String(x.dataset.group === 'person'))); } } catch (e) {}
 
   showEmpty('Loading the training schedule…');
   connect();
