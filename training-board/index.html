@@ -97,6 +97,11 @@ button { cursor: pointer; }
 .colhead .row { display: flex; align-items: baseline; gap: 6px; }
 .colhead .wd { font-weight: 700; font-size: 13px; }
 .colhead .date { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.colhead .time { font-family: var(--mono); font-size: 11px; color: var(--faint); border: 0; background: transparent; padding: 0 2px; width: 7.5em; min-width: 0; border-radius: 4px; }
+.colhead .time:hover { background: var(--surface); color: var(--muted); }
+.colhead .time:focus { background: var(--surface); color: var(--fg); outline: 1px solid var(--accent); }
+.colhead .time::placeholder { color: var(--faint); }
+.colhead span.time { width: auto; }
 .part { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 1px 5px; }
 .colhead .count { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .title-in { width: 100%; border: 1px solid transparent; background: var(--surface); border-radius: 6px; padding: 5px 7px; font-size: 13px; font-weight: 600; }
@@ -291,7 +296,7 @@ button { cursor: pointer; }
     const sessions = {};
     Object.values(S.sessions).forEach(s => {
       if (s.virtual && !s.people.length) return;
-      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved) };
+      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), start: s.start || '', people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved) };
       if (s.kind) b.kind = s.kind; sessions[s.id] = b;
     });
     const people = {};
@@ -304,7 +309,7 @@ button { cursor: pointer; }
       let titles = Array.isArray(b.titles) ? b.titles.filter(t => typeof t === 'string') : [];
       if (!titles.length && b.title) titles = [b.title];
       if (!titles.length) titles = [''];
-      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), kind: b.kind || '' };
+      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, start: typeof b.start === 'string' ? b.start : '', people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), kind: b.kind || '' };
     });
     if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', titles: [''], people: [], done: {}, moved: {}, kind: 'bench', virtual: true };
     S.sessions = next;
@@ -346,7 +351,7 @@ button { cursor: pointer; }
       if (!res.ok) return;
       const j = await res.json();
       if (j.unchanged || j.version === S.version) return;
-      const a = document.activeElement; if (a && (a.tagName === 'SELECT' || (a.classList && a.classList.contains('title-in')))) return;
+      const a = document.activeElement; if (a && (a.tagName === 'SELECT' || (a.classList && (a.classList.contains('title-in') || a.classList.contains('time'))))) return;
       if (S.dragging) return;
       applyState(j.data, j.version);
     } catch (e) { /* offline; try again next tick */ }
@@ -419,6 +424,8 @@ button { cursor: pointer; }
     render(); writeSession(sid);
   }
   const titleTimers = {};
+  const startTimers = {};
+  function setStart(sid, v) { const s = S.sessions[sid]; if (!s) return; s.start = v; clearTimeout(startTimers[sid]); startTimers[sid] = setTimeout(() => writeSession(sid), 600); }
   function setTitle(sid, i, title) {
     const s = S.sessions[sid]; if (!s) return;
     s.titles[i] = title;
@@ -429,7 +436,7 @@ button { cursor: pointer; }
     const key = part === 'Morning' ? 'am' : part === 'Afternoon' ? 'pm' : '';
     const id = 's-' + date + (key ? '-' + key : '');
     if (S.sessions[id]) { toast('That day already exists.'); return false; }
-    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], people: [], done: {}, moved: {} };
+    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], start: '8:30 AM CT', people: [], done: {}, moved: {} };
     render(); writeSession(id); return true;
   }
   function removeSession(sid) {
@@ -488,7 +495,12 @@ button { cursor: pointer; }
     const head = el('div', 'colhead');
     const r1 = el('div', 'row');
     if (isBench) { r1.appendChild(el('span', 'wd', 'Unassigned')); }
-    else { const f = fmtDate(s.date); r1.appendChild(el('span', 'wd', f.wd)); r1.appendChild(el('span', 'date', f.date)); if (s.part) r1.appendChild(el('span', 'part', s.part)); }
+    else {
+      const f = fmtDate(s.date); r1.appendChild(el('span', 'wd', f.wd)); r1.appendChild(el('span', 'date', f.date));
+      if (S.canWrite === false) { if (s.start) r1.appendChild(el('span', 'time', s.start)); }
+      else { const ti = el('input', 'time'); ti.type = 'text'; ti.id = 'start-' + s.id; ti.value = s.start || ''; ti.placeholder = 'start time'; ti.maxLength = 20; ti.setAttribute('aria-label', 'Start time'); ti.addEventListener('input', () => setStart(s.id, ti.value)); r1.appendChild(ti); }
+      if (s.part) r1.appendChild(el('span', 'part', s.part));
+    }
     r1.appendChild(el('span', 'count', String(s.people.length)));
     head.appendChild(r1);
     if (!isBench) {
@@ -638,7 +650,7 @@ button { cursor: pointer; }
         const t = el('div', 't'); const tt = titlesText(s); if (tt) t.textContent = tt; else { const u = el('span', 'untitled', 'Untitled training'); t.appendChild(u); }
         const f = fmtDate(s.date);
         head.appendChild(t);
-        const d = el('div', 'd', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : ''));
+        const d = el('div', 'd', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (s.start ? ' · ' + s.start : ''));
         head.appendChild(d);
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = (n ? Math.round(k / n * 100) : 0) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
