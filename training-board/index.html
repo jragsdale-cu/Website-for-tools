@@ -117,6 +117,11 @@ button { cursor: pointer; }
 .loc select.unset { color: var(--faint); font-weight: 500; }
 .loc .ro { font-weight: 600; color: var(--fg); font-size: 12px; }
 .loc .ro.unset { color: var(--faint); font-weight: 500; }
+.card .rt { grid-column: 1; margin-top: 4px; display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+.card .rt select { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; padding: 2px 4px; font-size: 11px; font-weight: 600; color: var(--fg); }
+.card .rt select.unset { color: var(--faint); font-weight: 500; }
+.card .rt .ro { font-weight: 600; color: var(--fg); }
+.card .rt .ro.unset { color: var(--faint); font-weight: 500; }
 .card .moved { grid-column: 1; font-size: 10.5px; color: var(--warn); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cover { display: flex; flex-wrap: wrap; gap: 3px 8px; font-size: 11px; color: var(--muted); min-height: 14px; }
 .cover span { white-space: nowrap; }
@@ -128,9 +133,9 @@ button { cursor: pointer; }
 .card .name { font-weight: 600; font-size: 13px; line-height: 1.25; }
 .card .meta { grid-column: 1; font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card .meta .br { color: var(--bc, var(--muted)); font-weight: 600; }
-.card .done-mark { grid-column: 2; grid-row: 1 / span 3; align-self: center; color: var(--ok); font-size: 14px; font-weight: 700; display: none; }
+.card .done-mark { grid-column: 2; grid-row: 1 / span 4; align-self: center; color: var(--ok); font-size: 14px; font-weight: 700; display: none; }
 .card.done .done-mark { display: block; }
-.card .mv { grid-column: 2; grid-row: 1 / span 3; align-self: center; border: 0; background: transparent; color: var(--faint); border-radius: 5px; padding: 2px 4px; font-size: 14px; line-height: 1; opacity: 0; }
+.card .mv { grid-column: 2; grid-row: 1 / span 4; align-self: center; border: 0; background: transparent; color: var(--faint); border-radius: 5px; padding: 2px 4px; font-size: 14px; line-height: 1; opacity: 0; }
 .card:hover .mv, .card:focus-within .mv { opacity: 1; }
 .card.done .mv { display: none; }
 .card.done:hover .mv { display: block; } .card.done:hover .done-mark { display: none; }
@@ -286,7 +291,7 @@ button { cursor: pointer; }
     const sessions = {};
     Object.values(S.sessions).forEach(s => {
       if (s.virtual && !s.people.length) return;
-      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), location: s.location || '', people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved) };
+      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved), reportTo: Object.assign({}, s.reportTo) };
       if (s.kind) b.kind = s.kind; sessions[s.id] = b;
     });
     const people = {};
@@ -299,9 +304,9 @@ button { cursor: pointer; }
       let titles = Array.isArray(b.titles) ? b.titles.filter(t => typeof t === 'string') : [];
       if (!titles.length && b.title) titles = [b.title];
       if (!titles.length) titles = [''];
-      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, location: b.location || '', people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), kind: b.kind || '' };
+      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), reportTo: Object.assign({}, b.reportTo || {}), kind: b.kind || '' };
     });
-    if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', titles: [''], location: '', people: [], done: {}, moved: {}, kind: 'bench', virtual: true };
+    if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', titles: [''], people: [], done: {}, moved: {}, reportTo: {}, kind: 'bench', virtual: true };
     S.sessions = next;
     const ppl = {};
     Object.entries(data.people || {}).forEach(([id, b]) => { ppl[id] = { id, first: b.first || '', last: b.last || '', branch: b.branch || '', role: b.role || '', dept: b.dept || '' }; });
@@ -341,7 +346,7 @@ button { cursor: pointer; }
       if (!res.ok) return;
       const j = await res.json();
       if (j.unchanged || j.version === S.version) return;
-      const a = document.activeElement; if (a && a.classList && a.classList.contains('title-in')) return;
+      const a = document.activeElement; if (a && (a.tagName === 'SELECT' || (a.classList && a.classList.contains('title-in')))) return;
       if (S.dragging) return;
       applyState(j.data, j.version);
     } catch (e) { /* offline; try again next tick */ }
@@ -384,6 +389,7 @@ button { cursor: pointer; }
     delete from.moved[pid];
     if (origin === toId) delete to.moved[pid]; else to.moved[pid] = { from: origin, fromLabel: originLabel, at: Date.now() };
     const arr = to.people.slice(); arr.splice(Math.max(0, Math.min(index == null ? arr.length : index, arr.length)), 0, pid); to.people = arr;
+    if (from.reportTo[pid]) { to.reportTo[pid] = from.reportTo[pid]; delete from.reportTo[pid]; }
     logEvent('move', pid, from, to);
     render();
     writeSession(toId);
@@ -398,13 +404,14 @@ button { cursor: pointer; }
   function deletePerson(pid) {
     const p = S.people[pid]; if (!p) return;
     const days = Object.values(S.sessions).filter(s => s.people.includes(pid));
-    days.forEach(s => { s.people = s.people.filter(x => x !== pid); delete s.done[pid]; delete s.moved[pid]; });
+    days.forEach(s => { s.people = s.people.filter(x => x !== pid); delete s.done[pid]; delete s.moved[pid]; delete s.reportTo[pid]; });
     logEvent('delete', pid, null, null);
     delete S.people[pid];
     render(); scheduleSave();
     toast(fullName(p) + ' removed from the board.');
   }
-  function setLocation(sid, loc) { const s = S.sessions[sid]; if (!s) return; s.location = loc; render(); writeSession(sid); }
+  function setReportTo(sid, pid, loc) { const s = S.sessions[sid]; if (!s) return; if (loc) s.reportTo[pid] = loc; else delete s.reportTo[pid]; render(); writeSession(sid); }
+  function setReportToAll(sid, loc) { const s = S.sessions[sid]; if (!s) return; s.people.forEach(pid => { if (loc) s.reportTo[pid] = loc; else delete s.reportTo[pid]; }); render(); writeSession(sid); }
   function addTitle(sid) { const s = S.sessions[sid]; if (!s) return; s.titles = s.titles.concat(['']); render(); const inp = $('title-' + sid + '-' + (s.titles.length - 1)); if (inp) inp.focus(); }
   function removeTitle(sid, i) { const s = S.sessions[sid]; if (!s || s.titles.length <= 1) return; s.titles = s.titles.filter((_, k) => k !== i); render(); writeSession(sid); }
   function toggleDone(sid, pid) {
@@ -423,7 +430,7 @@ button { cursor: pointer; }
     const key = part === 'Morning' ? 'am' : part === 'Afternoon' ? 'pm' : '';
     const id = 's-' + date + (key ? '-' + key : '');
     if (S.sessions[id]) { toast('That day already exists.'); return false; }
-    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], location: '', people: [], done: {}, moved: {} };
+    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], people: [], done: {}, moved: {}, reportTo: {} };
     render(); writeSession(id); return true;
   }
   function removeSession(sid) {
@@ -498,17 +505,15 @@ button { cursor: pointer; }
       });
       if (!ro) { const add = el('button', 'addt', '+ Add training'); add.addEventListener('click', () => addTitle(s.id)); tl.appendChild(add); }
       head.appendChild(tl);
-      const loc = el('div', 'loc'); loc.appendChild(el('span', 'lbl', 'Report to'));
-      if (ro) { loc.appendChild(el('span', 'ro' + (s.location ? '' : ' unset'), s.location || 'Not set')); }
-      else {
-        const sel = el('select'); sel.id = 'loc-' + s.id; sel.setAttribute('aria-label', 'Report-to location');
-        const o0 = el('option', null, 'Not set'); o0.value = ''; sel.appendChild(o0);
-        LOCATIONS.concat(s.location && !LOCATIONS.includes(s.location) ? [s.location] : []).forEach(l => { const o = el('option', null, l); o.value = l; sel.appendChild(o); });
-        sel.value = s.location || ''; if (!s.location) sel.classList.add('unset');
-        sel.addEventListener('change', () => setLocation(s.id, sel.value));
-        loc.appendChild(sel);
+      if (!ro && s.people.length) {
+        const loc = el('div', 'loc'); loc.appendChild(el('span', 'lbl', 'Report to'));
+        const sel = el('select'); sel.id = 'locall-' + s.id; sel.setAttribute('aria-label', 'Set report-to location for everyone on this day'); sel.classList.add('unset');
+        const o0 = el('option', null, 'Set for everyone…'); o0.value = ''; sel.appendChild(o0);
+        LOCATIONS.forEach(l => { const o = el('option', null, l); o.value = l; sel.appendChild(o); });
+        const oc = el('option', null, 'Clear for everyone'); oc.value = '__clear'; sel.appendChild(oc);
+        sel.addEventListener('change', () => { setReportToAll(s.id, sel.value === '__clear' ? '' : sel.value); });
+        loc.appendChild(sel); head.appendChild(loc);
       }
-      head.appendChild(loc);
       head.appendChild(renderCoverage(s));
     } else {
       head.appendChild(el('div', 'cover', 'People pulled off a day land here until they are rescheduled.'));
@@ -540,6 +545,20 @@ button { cursor: pointer; }
     card.style.setProperty('--bc', bcolor(p.branch));
     card.appendChild(el('div', 'name', fullName(p)));
     const meta = el('div', 'meta'); const br = el('span', 'br', p.branch || '—'); meta.appendChild(br); if (p.role) meta.appendChild(document.createTextNode(' · ' + p.role)); card.appendChild(meta);
+    if (s.id !== BENCH) {
+      const rt = el('div', 'rt'); const cur = s.reportTo[p.id] || '';
+      if (S.canWrite === false) { rt.appendChild(document.createTextNode('Report to ')); rt.appendChild(el('span', 'ro' + (cur ? '' : ' unset'), cur || 'not set')); }
+      else {
+        const sel = el('select'); sel.id = 'rt-' + s.id + '-' + p.id; sel.setAttribute('aria-label', 'Report-to location for ' + fullName(p)); sel.draggable = false;
+        const o0 = el('option', null, 'Report to…'); o0.value = ''; sel.appendChild(o0);
+        LOCATIONS.concat(cur && !LOCATIONS.includes(cur) ? [cur] : []).forEach(l => { const o = el('option', null, l); o.value = l; sel.appendChild(o); });
+        sel.value = cur; if (!cur) sel.classList.add('unset');
+        sel.addEventListener('mousedown', ev => ev.stopPropagation());
+        sel.addEventListener('change', () => setReportTo(s.id, p.id, sel.value));
+        rt.appendChild(sel);
+      }
+      card.appendChild(rt);
+    }
     const mv0 = s.moved[p.id];
     if (mv0) { const m = el('div', 'moved', '↳ moved from ' + (mv0.fromLabel || shortLabel(S.sessions[mv0.from]) || 'another day')); m.title = 'Moved ' + fmtWhen(mv0.at); card.appendChild(m); }
     card.appendChild(el('span', 'done-mark', '✓'));
@@ -634,12 +653,11 @@ button { cursor: pointer; }
         const f = fmtDate(s.date);
         head.appendChild(t);
         const d = el('div', 'd', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : ''));
-        if (s.location) { const lt = el('span', 'loc-tag', ' · report to '); lt.appendChild(el('b', null, s.location)); d.appendChild(lt); }
         head.appendChild(d);
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = (n ? Math.round(k / n * 100) : 0) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
         const rows = el('div', 'rows');
-        s.people.map(pid => S.people[pid]).filter(Boolean).sort(personSort).forEach(p => rows.appendChild(renderCheckRow(s, p, fullName(p), p.branch)));
+        s.people.map(pid => S.people[pid]).filter(Boolean).sort(personSort).forEach(p => rows.appendChild(renderCheckRow(s, p, fullName(p), p.branch + (s.reportTo[p.id] ? ' · ' + s.reportTo[p.id] : ''))));
         if (!s.people.length) { rows.appendChild(el('div', 'row-p sub', 'No one scheduled')); }
         sec.appendChild(rows); root.appendChild(sec);
       });
@@ -657,7 +675,7 @@ button { cursor: pointer; }
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = Math.round(k / n * 100) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
         const rows = el('div', 'rows');
-        mine.forEach(s => { const f = fmtDate(s.date); rows.appendChild(renderCheckRow(s, p, titlesText(s) || 'Untitled training', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (s.location ? ' · ' + s.location : ''), true)); });
+        mine.forEach(s => { const f = fmtDate(s.date); rows.appendChild(renderCheckRow(s, p, titlesText(s) || 'Untitled training', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (s.reportTo[p.id] ? ' · ' + s.reportTo[p.id] : ''), true)); });
         sec.appendChild(rows); root.appendChild(sec);
       });
     }
