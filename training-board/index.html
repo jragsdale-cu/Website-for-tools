@@ -255,8 +255,9 @@ button { cursor: pointer; }
   // ---------- state ----------
   const S = { sessions: {}, people: {}, ready: false, canWrite: null, view: 'board', group: 'session', db: null, dragging: null };
   const BENCH = 'unassigned';
-  const BRANCH_KEY = { 'Center': 'center', 'Airport': 'airport', 'WNCO': 'wnco', 'Ottawa': 'ottawa', 'BSC': 'bsc', 'Call Center': 'call' };
-  const BRANCH_ORDER = ['Center', 'Airport', 'WNCO', 'Ottawa', 'BSC', 'Call Center'];
+  // B/N = Bloomington-Normal (Center St, BSC, Airport). Older branch names still map to the same color.
+  const BRANCH_KEY = { 'B/N': 'center', 'Center': 'center', 'Airport': 'center', 'BSC': 'center', 'WNCO': 'wnco', 'Ottawa': 'ottawa', 'Call Center': 'call' };
+  const BRANCH_ORDER = ['B/N', 'WNCO', 'Ottawa', 'Call Center'];
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const bcolor = (branch) => 'var(--b-' + (BRANCH_KEY[branch] || 'other') + ')';
