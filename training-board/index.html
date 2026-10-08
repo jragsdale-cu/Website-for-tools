@@ -291,11 +291,11 @@ button { cursor: pointer; }
     const sessions = {};
     Object.values(S.sessions).forEach(s => {
       if (s.virtual && !s.people.length) return;
-      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved), reportTo: Object.assign({}, s.reportTo) };
+      const b = { date: s.date || '', part: s.part || '', sort: s.sort || '', titles: s.titles.slice(), people: s.people.slice(), done: Object.assign({}, s.done), moved: Object.assign({}, s.moved) };
       if (s.kind) b.kind = s.kind; sessions[s.id] = b;
     });
     const people = {};
-    Object.values(S.people).forEach(p => { people[p.id] = { first: p.first, last: p.last, branch: p.branch, role: p.role || '', dept: p.dept || '' }; });
+    Object.values(S.people).forEach(p => { people[p.id] = { first: p.first, last: p.last, branch: p.branch, role: p.role || '', dept: p.dept || '', reportTo: p.reportTo || '' }; });
     return { people, sessions, log: S.log.slice(-LOG_MAX) };
   }
   function applyState(data, version) {
@@ -304,12 +304,12 @@ button { cursor: pointer; }
       let titles = Array.isArray(b.titles) ? b.titles.filter(t => typeof t === 'string') : [];
       if (!titles.length && b.title) titles = [b.title];
       if (!titles.length) titles = [''];
-      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), reportTo: Object.assign({}, b.reportTo || {}), kind: b.kind || '' };
+      next[id] = { id, date: b.date || '', part: b.part || '', sort: b.sort || '', titles, people: Array.isArray(b.people) ? b.people.slice() : [], done: Object.assign({}, b.done || {}), moved: Object.assign({}, b.moved || {}), kind: b.kind || '' };
     });
-    if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', titles: [''], people: [], done: {}, moved: {}, reportTo: {}, kind: 'bench', virtual: true };
+    if (!next[BENCH]) next[BENCH] = { id: BENCH, date: '', part: '', sort: 'zzz', titles: [''], people: [], done: {}, moved: {}, kind: 'bench', virtual: true };
     S.sessions = next;
     const ppl = {};
-    Object.entries(data.people || {}).forEach(([id, b]) => { ppl[id] = { id, first: b.first || '', last: b.last || '', branch: b.branch || '', role: b.role || '', dept: b.dept || '' }; });
+    Object.entries(data.people || {}).forEach(([id, b]) => { ppl[id] = { id, first: b.first || '', last: b.last || '', branch: b.branch || '', role: b.role || '', dept: b.dept || '', reportTo: b.reportTo || '' }; });
     S.people = ppl; S.log = Array.isArray(data.log) ? data.log.slice(-LOG_MAX) : []; S.version = version; S.ready = true; render();
   }
   function shortLabel(s) { if (!s) return '?'; if (s.id === BENCH) return 'Unassigned'; const f = fmtDate(s.date); return f.wd + ' ' + f.date + (s.part ? ' ' + s.part : ''); }
@@ -389,7 +389,6 @@ button { cursor: pointer; }
     delete from.moved[pid];
     if (origin === toId) delete to.moved[pid]; else to.moved[pid] = { from: origin, fromLabel: originLabel, at: Date.now() };
     const arr = to.people.slice(); arr.splice(Math.max(0, Math.min(index == null ? arr.length : index, arr.length)), 0, pid); to.people = arr;
-    if (from.reportTo[pid]) { to.reportTo[pid] = from.reportTo[pid]; delete from.reportTo[pid]; }
     logEvent('move', pid, from, to);
     render();
     writeSession(toId);
@@ -404,14 +403,14 @@ button { cursor: pointer; }
   function deletePerson(pid) {
     const p = S.people[pid]; if (!p) return;
     const days = Object.values(S.sessions).filter(s => s.people.includes(pid));
-    days.forEach(s => { s.people = s.people.filter(x => x !== pid); delete s.done[pid]; delete s.moved[pid]; delete s.reportTo[pid]; });
+    days.forEach(s => { s.people = s.people.filter(x => x !== pid); delete s.done[pid]; delete s.moved[pid]; });
     logEvent('delete', pid, null, null);
     delete S.people[pid];
     render(); scheduleSave();
     toast(fullName(p) + ' removed from the board.');
   }
-  function setReportTo(sid, pid, loc) { const s = S.sessions[sid]; if (!s) return; if (loc) s.reportTo[pid] = loc; else delete s.reportTo[pid]; render(); writeSession(sid); }
-  function setReportToAll(sid, loc) { const s = S.sessions[sid]; if (!s) return; s.people.forEach(pid => { if (loc) s.reportTo[pid] = loc; else delete s.reportTo[pid]; }); render(); writeSession(sid); }
+  function setReportTo(pid, loc) { const p = S.people[pid]; if (!p) return; p.reportTo = loc || ''; render(); writePerson(pid); }
+  function setReportToAll(sid, loc) { const s = S.sessions[sid]; if (!s) return; s.people.forEach(pid => { if (S.people[pid]) S.people[pid].reportTo = loc || ''; }); render(); scheduleSave(); }
   function addTitle(sid) { const s = S.sessions[sid]; if (!s) return; s.titles = s.titles.concat(['']); render(); const inp = $('title-' + sid + '-' + (s.titles.length - 1)); if (inp) inp.focus(); }
   function removeTitle(sid, i) { const s = S.sessions[sid]; if (!s || s.titles.length <= 1) return; s.titles = s.titles.filter((_, k) => k !== i); render(); writeSession(sid); }
   function toggleDone(sid, pid) {
@@ -430,17 +429,17 @@ button { cursor: pointer; }
     const key = part === 'Morning' ? 'am' : part === 'Afternoon' ? 'pm' : '';
     const id = 's-' + date + (key ? '-' + key : '');
     if (S.sessions[id]) { toast('That day already exists.'); return false; }
-    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], people: [], done: {}, moved: {}, reportTo: {} };
+    S.sessions[id] = { id, date, part: part || '', sort: date + '-' + (key === 'am' ? '1' : key === 'pm' ? '2' : '0'), titles: [''], people: [], done: {}, moved: {} };
     render(); writeSession(id); return true;
   }
   function removeSession(sid) {
     const s = S.sessions[sid]; if (!s || s.people.length) return;
     delete S.sessions[sid]; render(); deleteSessionDoc(sid);
   }
-  function addPerson(first, last, branch, role) {
+  function addPerson(first, last, branch, role, reportTo) {
     const id = (first + ' ' + last).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     if (!id) return null;
-    if (!S.people[id]) { S.people[id] = { id, first, last, branch, role: role || '', dept: 'Added' }; writePerson(id); }
+    if (!S.people[id]) { S.people[id] = { id, first, last, branch, role: role || '', dept: 'Added', reportTo: reportTo || '' }; writePerson(id); }
     return id;
   }
 
@@ -508,7 +507,7 @@ button { cursor: pointer; }
       if (!ro && s.people.length) {
         const loc = el('div', 'loc'); loc.appendChild(el('span', 'lbl', 'Report to'));
         const sel = el('select'); sel.id = 'locall-' + s.id; sel.setAttribute('aria-label', 'Set report-to location for everyone on this day'); sel.classList.add('unset');
-        const o0 = el('option', null, 'Set for everyone…'); o0.value = ''; sel.appendChild(o0);
+        const o0 = el('option', null, 'Set for everyone on this day…'); o0.value = ''; sel.appendChild(o0);
         LOCATIONS.forEach(l => { const o = el('option', null, l); o.value = l; sel.appendChild(o); });
         const oc = el('option', null, 'Clear for everyone'); oc.value = '__clear'; sel.appendChild(oc);
         sel.addEventListener('change', () => { setReportToAll(s.id, sel.value === '__clear' ? '' : sel.value); });
@@ -545,20 +544,7 @@ button { cursor: pointer; }
     card.style.setProperty('--bc', bcolor(p.branch));
     card.appendChild(el('div', 'name', fullName(p)));
     const meta = el('div', 'meta'); const br = el('span', 'br', p.branch || '—'); meta.appendChild(br); if (p.role) meta.appendChild(document.createTextNode(' · ' + p.role)); card.appendChild(meta);
-    if (s.id !== BENCH) {
-      const rt = el('div', 'rt'); const cur = s.reportTo[p.id] || '';
-      if (S.canWrite === false) { rt.appendChild(document.createTextNode('Report to ')); rt.appendChild(el('span', 'ro' + (cur ? '' : ' unset'), cur || 'not set')); }
-      else {
-        const sel = el('select'); sel.id = 'rt-' + s.id + '-' + p.id; sel.setAttribute('aria-label', 'Report-to location for ' + fullName(p)); sel.draggable = false;
-        const o0 = el('option', null, 'Report to…'); o0.value = ''; sel.appendChild(o0);
-        LOCATIONS.concat(cur && !LOCATIONS.includes(cur) ? [cur] : []).forEach(l => { const o = el('option', null, l); o.value = l; sel.appendChild(o); });
-        sel.value = cur; if (!cur) sel.classList.add('unset');
-        sel.addEventListener('mousedown', ev => ev.stopPropagation());
-        sel.addEventListener('change', () => setReportTo(s.id, p.id, sel.value));
-        rt.appendChild(sel);
-      }
-      card.appendChild(rt);
-    }
+    if (p.reportTo) { const rt = el('div', 'rt'); rt.appendChild(document.createTextNode('Report to ')); rt.appendChild(el('span', 'ro', p.reportTo)); card.appendChild(rt); }
     const mv0 = s.moved[p.id];
     if (mv0) { const m = el('div', 'moved', '↳ moved from ' + (mv0.fromLabel || shortLabel(S.sessions[mv0.from]) || 'another day')); m.title = 'Moved ' + fmtWhen(mv0.at); card.appendChild(m); }
     card.appendChild(el('span', 'done-mark', '✓'));
@@ -657,7 +643,7 @@ button { cursor: pointer; }
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = (n ? Math.round(k / n * 100) : 0) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
         const rows = el('div', 'rows');
-        s.people.map(pid => S.people[pid]).filter(Boolean).sort(personSort).forEach(p => rows.appendChild(renderCheckRow(s, p, fullName(p), p.branch + (s.reportTo[p.id] ? ' · ' + s.reportTo[p.id] : ''))));
+        s.people.map(pid => S.people[pid]).filter(Boolean).sort(personSort).forEach(p => rows.appendChild(renderCheckRow(s, p, fullName(p), p.branch + (p.reportTo ? ' · ' + p.reportTo : ''))));
         if (!s.people.length) { rows.appendChild(el('div', 'row-p sub', 'No one scheduled')); }
         sec.appendChild(rows); root.appendChild(sec);
       });
@@ -671,11 +657,11 @@ button { cursor: pointer; }
         const sec = el('section', 'sec' + (k === n ? ' complete' : ''));
         const head = el('div', 'sechead');
         const t = el('div', 't', fullName(p)); head.appendChild(t);
-        const d = el('div', 'd'); const br = el('span', 'br', p.branch); br.style.setProperty('--bc', bcolor(p.branch)); br.style.color = 'var(--bc)'; br.style.fontWeight = '600'; d.appendChild(br); if (p.role) d.appendChild(document.createTextNode(' · ' + p.role)); head.appendChild(d);
+        const d = el('div', 'd'); const br = el('span', 'br', p.branch); br.style.setProperty('--bc', bcolor(p.branch)); br.style.color = 'var(--bc)'; br.style.fontWeight = '600'; d.appendChild(br); if (p.role) d.appendChild(document.createTextNode(' · ' + p.role)); if (p.reportTo) d.appendChild(document.createTextNode(' · reports to ' + p.reportTo)); head.appendChild(d);
         const prog = el('div', 'prog'); prog.appendChild(el('span', 'n', k + '/' + n)); const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = Math.round(k / n * 100) + '%'; bar.appendChild(fill); prog.appendChild(bar); head.appendChild(prog);
         sec.appendChild(head);
         const rows = el('div', 'rows');
-        mine.forEach(s => { const f = fmtDate(s.date); rows.appendChild(renderCheckRow(s, p, titlesText(s) || 'Untitled training', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : '') + (s.reportTo[p.id] ? ' · ' + s.reportTo[p.id] : ''), true)); });
+        mine.forEach(s => { const f = fmtDate(s.date); rows.appendChild(renderCheckRow(s, p, titlesText(s) || 'Untitled training', f.wd + ' ' + f.date + (s.part ? ' · ' + s.part : ''), true)); });
         sec.appendChild(rows); root.appendChild(sec);
       });
     }
@@ -718,6 +704,13 @@ button { cursor: pointer; }
       orderedSessions().concat([S.sessions[BENCH]]).filter(s => s && s.id !== fromId).forEach(s => { const o = el('option', null, sessionLabel(s)); o.value = s.id; if (s.people.includes(pid)) { o.disabled = true; o.textContent += ' (already on)'; } sel.appendChild(o); });
       pop.appendChild(sel);
       const act = el('div', 'actions'); const c = el('button', 'btn', 'Cancel'); c.addEventListener('click', closePop); const ok = el('button', 'btn primary', 'Move'); ok.addEventListener('click', () => { movePerson(pid, fromId, sel.value, null); closePop(); }); act.appendChild(c); act.appendChild(ok); pop.appendChild(act);
+      pop.appendChild(el('label', null, 'Reports to'));
+      const rsel = el('select'); rsel.id = 'rt-' + pid;
+      const r0 = el('option', null, 'Not set'); r0.value = ''; rsel.appendChild(r0);
+      LOCATIONS.concat(p.reportTo && !LOCATIONS.includes(p.reportTo) ? [p.reportTo] : []).forEach(l => { const o = el('option', null, l); o.value = l; rsel.appendChild(o); });
+      rsel.value = p.reportTo || '';
+      rsel.addEventListener('change', () => { setReportTo(pid, rsel.value); toast(fullName(p) + (rsel.value ? ' reports to ' + rsel.value : ': report-to cleared')); });
+      pop.appendChild(rsel);
       const days = Object.values(S.sessions).filter(s => s.people.includes(pid) && s.id !== BENCH).length;
       const del = el('button', 'danger', 'Remove ' + p.first + ' from the board…');
       del.addEventListener('click', () => {
@@ -744,13 +737,14 @@ button { cursor: pointer; }
       const la = el('input'); la.id = 'np-last'; la.placeholder = 'Last name';
       const br = el('select'); br.id = 'np-branch'; BRANCH_ORDER.forEach(b => { const o = el('option', null, b); o.value = b; br.appendChild(o); });
       const ro = el('input'); ro.id = 'np-role'; ro.placeholder = 'Role (optional)';
-      form.appendChild(fi); form.appendChild(la); form.appendChild(br); form.appendChild(ro); pop.appendChild(form);
+      const rt = el('select'); rt.id = 'np-rt'; const rt0 = el('option', null, 'Reports to (optional)'); rt0.value = ''; rt.appendChild(rt0); LOCATIONS.forEach(l => { const o = el('option', null, l); o.value = l; rt.appendChild(o); });
+      form.appendChild(fi); form.appendChild(la); form.appendChild(br); form.appendChild(ro); form.appendChild(rt); pop.appendChild(form);
       sel.addEventListener('change', () => { form.hidden = sel.value !== '__new'; if (!form.hidden) fi.focus(); });
       const err = el('div', 'err'); pop.appendChild(err);
       const act = el('div', 'actions'); const c = el('button', 'btn', 'Cancel'); c.addEventListener('click', closePop);
       const ok = el('button', 'btn primary', 'Add'); ok.addEventListener('click', () => {
         let pid = sel.value;
-        if (pid === '__new') { if (!fi.value.trim() || !la.value.trim()) { err.textContent = 'First and last name are needed.'; return; } pid = addPerson(fi.value.trim(), la.value.trim(), br.value, ro.value.trim()); }
+        if (pid === '__new') { if (!fi.value.trim() || !la.value.trim()) { err.textContent = 'First and last name are needed.'; return; } pid = addPerson(fi.value.trim(), la.value.trim(), br.value, ro.value.trim(), rt.value); }
         if (pid) addToSession(sid, pid); closePop();
       });
       act.appendChild(c); act.appendChild(ok); pop.appendChild(act);
